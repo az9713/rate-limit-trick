@@ -9,7 +9,7 @@ A concise explainer of Host’s “keep the rate-limit clock moving” workflow 
 
 This repo contains:
 
-- [**Live write-up →**](https://az9713.github.io/rate-limit-trick/theo_rate_limit_trick_writeup.html) — a self-contained HTML write-up explaining the theory, workflow, and decision tree.
+- [**Live write-up →**](https://az9713.github.io/rate-limit-trick/rate_limit_trick_writeup.html) — a self-contained HTML write-up explaining the theory, workflow, and decision tree.
 - `maxxing_rate_limit.png` — an infographic visualization of the same idea.
 
 ![Rate limit trick infographic](maxxing_rate_limit.png)
@@ -52,7 +52,7 @@ Do not bother if the countdown is already active.
 ```text
 .
 ├── README.md
-├── theo_rate_limit_trick_writeup.html
+├── rate_limit_trick_writeup.html
 └── maxxing_rate_limit.png
 ```
 

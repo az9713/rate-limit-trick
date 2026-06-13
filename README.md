@@ -1,6 +1,6 @@
-# Theo’s Rate-Limit Trick
+# Host’s Rate-Limit Trick
 
-A concise explainer of Theo’s “keep the rate-limit clock moving” workflow for Claude Code / Fable usage.
+A concise explainer of Host’s “keep the rate-limit clock moving” workflow for Claude Code / Fable usage.
 
 ## Source video
 
@@ -16,7 +16,7 @@ This repo contains:
 
 ## Core idea
 
-Theo’s trick is based on a lazy-start reset-window assumption:
+Host’s trick is based on a lazy-start reset-window assumption:
 
 > If the 5-hour reset clock starts only after the first message, then a tiny “heartbeat” message can start the countdown earlier while using almost no budget.
 
@@ -58,4 +58,4 @@ Do not bother if the countdown is already active.
 
 ## Caveat
 
-This explanation is based on Theo’s described behavior. The trick only makes sense if the platform actually uses a lazy-start reset window. If the provider changes the rate-limit mechanics, the heartbeat may stop being useful.
+This explanation is based on Host’s described behavior. The trick only makes sense if the platform actually uses a lazy-start reset window. If the provider changes the rate-limit mechanics, the heartbeat may stop being useful.

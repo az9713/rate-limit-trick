@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Theory of Theo’s Rate-Limit Trick</title>
+  <title>The Theory of the Host’s Rate-Limit Trick</title>
   <style>
     :root {
       --bg: #f7f9fc;
@@ -269,10 +269,10 @@
 <body>
   <main class="page">
     <header class="hero">
-      <h1>The Theory of Theo’s Rate-Limit Trick</h1>
+      <h1>The Theory of the Host’s Rate-Limit Trick</h1>
       <p class="subtitle">How a tiny heartbeat message can start the reset clock earlier.</p>
       <div class="note">
-        This write-up is an interpretation of Theo’s explanation in the uploaded transcript. The mechanism matters only if the platform actually uses a <strong>lazy-start reset window</strong>: the clock begins after the first message, not automatically at wall-clock boundaries.
+        This write-up is an interpretation of the Host’s explanation in the uploaded transcript. The mechanism matters only if the platform actually uses a <strong>lazy-start reset window</strong>: the clock begins after the first message, not automatically at wall-clock boundaries.
       </div>
     </header>
 
@@ -302,7 +302,7 @@
       </table>
 
       <div class="callout blue">
-        <strong>The key idea:</strong> Theo is optimizing reset-clock utilization, not token efficiency. A tiny “hi” or <code>claude -p</code> heartbeat spends almost no budget but starts the countdown earlier.
+        <strong>The key idea:</strong> the Host is optimizing reset-clock utilization, not token efficiency. A tiny “hi” or <code>claude -p</code> heartbeat spends almost no budget but starts the countdown earlier.
       </div>
 
       <p>If the reset clock starts only after the first message, then an unused account can sit at <strong>0% usage</strong> while the reset clock is also dormant. That is bad if you later begin heavy Fable work and exhaust the window quickly.</p>
@@ -398,7 +398,7 @@
       </div>
 
       <h3>Hermes / cron form</h3>
-      <p>Theo’s Hermes-agent version asks an always-on agent to install a cron job. The important constraints are: run on an always-on machine, run in an empty directory, and trigger every 5 hours.</p>
+      <p>The Host’s Hermes-agent version asks an always-on agent to install a cron job. The important constraints are: run on an always-on machine, run in an empty directory, and trigger every 5 hours.</p>
 
       <pre><code>I want to make sure my Claude Code account has a recent message at all times.
 Set up a cron that triggers every 5 hours.
@@ -506,11 +506,11 @@ human-visible operational state</code></pre>
       <h2>6. Visualization</h2>
       <p>The infographic below summarizes the theory, workflow, and decision tree.</p>
       <div class="image-wrap">
-        <img src="theo_s_rate_limit_trick_explained.png" alt="Infographic explaining Theo's rate-limit trick with timelines, workflow, and decision tree">
+        <img src="maxxing_rate_limit.png" alt="Infographic explaining the Host's rate-limit trick with timelines, workflow, and decision tree">
       </div>
     </section>
 
-    <p class="footer">Created as a self-contained HTML explanation of Theo’s rate-limit trick, based on the uploaded transcript and follow-up discussion.</p>
+    <p class="footer">Created as a self-contained HTML explanation of the Host’s rate-limit trick, based on the uploaded transcript and follow-up discussion.</p>
   </main>
 </body>
 </html>

@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Theory of Theo’s Rate-Limit Trick</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --paper: #ffffff;
+      --ink: #141923;
+      --muted: #5c6675;
+      --blue: #174a8b;
+      --blue2: #e8f1ff;
+      --green: #1f7a37;
+      --green2: #eaf7ee;
+      --red: #b42318;
+      --red2: #fff0ef;
+      --amber: #9a6700;
+      --amber2: #fff7e6;
+      --line: #d7deea;
+      --code: #0b1220;
+      --codefg: #e9f0ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 36px 22px 64px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 34px 34px 28px;
+      box-shadow: 0 10px 30px rgba(19, 36, 66, 0.08);
+    }
+    h1 {
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.02;
+      margin: 0 0 12px;
+      letter-spacing: -0.04em;
+    }
+    .subtitle {
+      font-size: 20px;
+      color: var(--muted);
+      margin: 0 0 22px;
+    }
+    .note {
+      background: #fff;
+      border-left: 5px solid var(--blue);
+      padding: 14px 18px;
+      border-radius: 12px;
+      color: #2b3545;
+    }
+    .grid2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    @media (max-width: 780px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .hero { padding: 24px 20px; }
+    }
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 26px;
+      margin-top: 22px;
+      box-shadow: 0 6px 20px rgba(19, 36, 66, 0.045);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+      color: var(--blue);
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 19px;
+      letter-spacing: -0.01em;
+    }
+    p { margin: 10px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 6px 0; }
+    .callout {
+      border-radius: 14px;
+      padding: 15px 17px;
+      margin: 16px 0;
+      border: 1px solid var(--line);
+    }
+    .callout.blue { background: var(--blue2); border-color: #c6dcff; }
+    .callout.green { background: var(--green2); border-color: #bfe8ca; }
+    .callout.red { background: var(--red2); border-color: #ffd0cc; }
+    .callout.amber { background: var(--amber2); border-color: #ffe0a3; }
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: #f1f5fb;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      overflow-x: auto;
+    }
+    pre {
+      background: var(--code);
+      color: var(--codefg);
+      border-radius: 14px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 15px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 11px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #f3f6fb;
+      color: #26364c;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: 140px 1fr 245px;
+      gap: 16px;
+      align-items: center;
+      margin: 16px 0;
+    }
+    @media (max-width: 860px) {
+      .timeline { grid-template-columns: 1fr; }
+    }
+    .lane-label {
+      font-weight: 800;
+      padding: 10px 12px;
+      border-radius: 999px;
+      text-align: center;
+    }
+    .lane-label.red { color: var(--red); background: var(--red2); }
+    .lane-label.green { color: var(--green); background: var(--green2); }
+    .ticks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      position: relative;
+    }
+    .ticks:before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 8%;
+      right: 8%;
+      height: 2px;
+      background: #b7c0cf;
+      z-index: 0;
+    }
+    .tick {
+      position: relative;
+      z-index: 1;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 94px;
+      text-align: center;
+    }
+    .time {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .time.red { color: var(--red); }
+    .time.green { color: var(--green); }
+    .result {
+      border-left: 4px solid var(--line);
+      padding-left: 14px;
+      color: #2c3544;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    @media (max-width: 920px) {
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .flow { grid-template-columns: 1fr; }
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 128px;
+      background: #fbfcff;
+    }
+    .stepnum {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .decision {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .decision-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 760px) {
+      .decision-row { grid-template-columns: 1fr; }
+    }
+    .decision-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fbfcff;
+    }
+    .yes { color: var(--green); font-weight: 800; }
+    .no { color: var(--red); font-weight: 800; }
+    .image-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .image-wrap img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid #e8edf5;
+    }
+    .footer {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 22px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <h1>The Theory of Theo’s Rate-Limit Trick</h1>
+      <p class="subtitle">How a tiny heartbeat message can start the reset clock earlier.</p>
+      <div class="note">
+        This write-up is an interpretation of Theo’s explanation in the uploaded transcript. The mechanism matters only if the platform actually uses a <strong>lazy-start reset window</strong>: the clock begins after the first message, not automatically at wall-clock boundaries.
+      </div>
+    </header>
+
+    <section>
+      <h2>1. Core theory</h2>
+      <p>The trick separates two concepts that users often conflate:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Concept</th>
+            <th>Meaning</th>
+            <th>Why it matters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Usage budget</strong></td>
+            <td>The amount of model usage available inside the current 5-hour window.</td>
+            <td>This is the thing you spend when you run real agent work.</td>
+          </tr>
+          <tr>
+            <td><strong>Reset timer</strong></td>
+            <td>The countdown until that allowance refreshes.</td>
+            <td>If the timer is not running, you are wasting potential reset time.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout blue">
+        <strong>The key idea:</strong> Theo is optimizing reset-clock utilization, not token efficiency. A tiny “hi” or <code>claude -p</code> heartbeat spends almost no budget but starts the countdown earlier.
+      </div>
+
+      <p>If the reset clock starts only after the first message, then an unused account can sit at <strong>0% usage</strong> while the reset clock is also dormant. That is bad if you later begin heavy Fable work and exhaust the window quickly.</p>
+
+      <div class="formula">
+        Wasted reset latency = time between “window became available” and “first message starts countdown”
+      </div>
+
+      <p>The heartbeat reduces that latency by forcing the countdown to begin before serious work begins.</p>
+    </section>
+
+    <section>
+      <h2>2. Why the trick helps</h2>
+
+      <div class="timeline">
+        <div class="lane-label red">A. No heartbeat</div>
+        <div class="ticks">
+          <div class="tick">
+            <div class="time red">9:00 AM</div>
+            <div>first real task starts</div>
+          </div>
+          <div class="tick">
+            <div class="time red">10:00 AM</div>
+            <div>heavy usage budget exhausted</div>
+          </div>
+          <div class="tick">
+            <div class="time red">2:00 PM</div>
+            <div>reset arrives</div>
+          </div>
+        </div>
+        <div class="result"><strong>Result:</strong> about 1 hour of heavy work, then about 4 hours waiting.</div>
+      </div>
+
+      <div class="timeline">
+        <div class="lane-label green">B. Heartbeat first</div>
+        <div class="ticks">
+          <div class="tick">
+            <div class="time green">4:00 AM</div>
+            <div>tiny “hi” or <code>claude -p</code> heartbeat</div>
+          </div>
+          <div class="tick">
+            <div class="time green">8:30 AM</div>
+            <div>serious work starts</div>
+          </div>
+          <div class="tick">
+            <div class="time green">9:00 AM</div>
+            <div>reset arrives soon</div>
+          </div>
+        </div>
+        <div class="result"><strong>Result:</strong> heavy work begins when the next refresh is already close.</div>
+      </div>
+
+      <div class="callout green">
+        <strong>Operational meaning:</strong> the trick does not create extra usage. It makes the reset schedule less idle.
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Workflow</h2>
+      <p>The workflow is a scheduled “heartbeat” for the account.</p>
+
+      <div class="flow">
+        <div class="step">
+          <div class="stepnum">1</div>
+          <strong>Check account status</strong>
+          <p>Look at current 5-hour usage and whether a countdown is active.</p>
+        </div>
+        <div class="step">
+          <div class="stepnum">2</div>
+          <strong>Confirm dormant state</strong>
+          <p>Best case: usage is 0% and no 5-hour timer is running.</p>
+        </div>
+        <div class="step">
+          <div class="stepnum">3</div>
+          <strong>Run tiny heartbeat</strong>
+          <p>Send a trivial message or run <code>claude -p</code> in an empty directory.</p>
+        </div>
+        <div class="step">
+          <div class="stepnum">4</div>
+          <strong>Timer starts</strong>
+          <p>Usage remains near 0%, but the reset clock begins counting down.</p>
+        </div>
+        <div class="step">
+          <div class="stepnum">5</div>
+          <strong>Start serious work later</strong>
+          <p>Run heavy Fable workflows closer to the next reset.</p>
+        </div>
+        <div class="step">
+          <div class="stepnum">6</div>
+          <strong>Manage exhaustion</strong>
+          <p>If usage gets high, wait for imminent reset, switch account, or use cheaper models.</p>
+        </div>
+      </div>
+
+      <h3>Hermes / cron form</h3>
+      <p>Theo’s Hermes-agent version asks an always-on agent to install a cron job. The important constraints are: run on an always-on machine, run in an empty directory, and trigger every 5 hours.</p>
+
+      <pre><code>I want to make sure my Claude Code account has a recent message at all times.
+Set up a cron that triggers every 5 hours.
+It should run in an empty directory.
+The command should be claude-p.</code></pre>
+
+      <h3>Safer shell version</h3>
+      <pre><code>mkdir -p ~/agent-heartbeats/claude-empty
+mkdir -p ~/agent-heartbeats/logs
+
+cat > ~/agent-heartbeats/run-claude-p-heartbeat.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKDIR="$HOME/agent-heartbeats/claude-empty"
+LOGFILE="$HOME/agent-heartbeats/logs/claude-p-heartbeat.log"
+
+mkdir -p "$WORKDIR" "$(dirname "$LOGFILE")"
+cd "$WORKDIR"
+
+echo "[$(date -Is)] starting claude-p heartbeat" >> "$LOGFILE"
+timeout 60s claude-p >> "$LOGFILE" 2>&1 || true
+echo "[$(date -Is)] finished claude-p heartbeat" >> "$LOGFILE"
+EOF
+
+chmod +x ~/agent-heartbeats/run-claude-p-heartbeat.sh
+
+# Add this to crontab:
+# 0 */5 * * * /bin/bash ~/agent-heartbeats/run-claude-p-heartbeat.sh</code></pre>
+
+      <div class="callout amber">
+        <strong>Safety note:</strong> run the heartbeat in an empty directory. A scheduled agent command inside a real repo is a footgun: it may inspect, create, or mutate files you did not intend to touch.
+      </div>
+    </section>
+
+    <section>
+      <h2>4. Decision tree</h2>
+
+      <div class="decision">
+        <div class="decision-card">
+          <strong>State 1: usage = 0% and no 5-hour countdown is active?</strong>
+          <p><span class="yes">Yes →</span> run the tiny heartbeat now. Then let the timer count down in the background.</p>
+          <p><span class="no">No →</span> check the next state.</p>
+        </div>
+
+        <div class="decision-row">
+          <div class="decision-card">
+            <strong>State 2: countdown already active?</strong>
+            <p><span class="yes">Yes →</span> do not bother. Another heartbeat adds little value.</p>
+            <p><span class="no">No →</span> only run heartbeat if usage is fresh or near-fresh.</p>
+          </div>
+
+          <div class="decision-card">
+            <strong>State 3: usage high and reset soon?</strong>
+            <p><span class="yes">Yes →</span> wait for reset. Do not start a large workflow right before exhaustion unless the reset is imminent.</p>
+            <p><span class="no">No →</span> consider switching account or using a cheaper model.</p>
+          </div>
+        </div>
+
+        <div class="decision-card">
+          <strong>State 4: usage high and reset far away?</strong>
+          <p><span class="yes">Yes →</span> stop, switch account, route subagents to cheaper models, or defer heavy workflows.</p>
+          <p><span class="no">No →</span> proceed normally.</p>
+        </div>
+      </div>
+
+      <div class="callout blue">
+        <strong>Rule of thumb:</strong> the best time to run the first tiny “hi” is when the 5-hour bucket is fresh at 0% and the timer has not started.
+      </div>
+    </section>
+
+    <section>
+      <h2>5. The deeper abstraction</h2>
+      <p>The narrow trick is about Claude Code / Fable rate-limit windows. The broader agent-systems abstraction is more useful:</p>
+
+      <div class="formula">
+        scheduled heartbeat → active reset clock → less idle waiting
+      </div>
+
+      <p>Generalized beyond this specific rate-limit issue, a heartbeat can also be used to keep an agent system operational:</p>
+      <ul>
+        <li>check whether agent credentials still work,</li>
+        <li>verify that the CLI still launches,</li>
+        <li>emit logs for observability,</li>
+        <li>keep queues moving,</li>
+        <li>run daily PR triage,</li>
+        <li>inspect failing CI,</li>
+        <li>summarize what needs human attention.</li>
+      </ul>
+
+      <p>In production terms, this is a minimal agent daemon pattern:</p>
+
+      <pre><code>cron / scheduler
+    ↓
+safe empty workspace
+    ↓
+agent CLI heartbeat
+    ↓
+logs
+    ↓
+human-visible operational state</code></pre>
+    </section>
+
+    <section>
+      <h2>6. Visualization</h2>
+      <p>The infographic below summarizes the theory, workflow, and decision tree.</p>
+      <div class="image-wrap">
+        <img src="theo_s_rate_limit_trick_explained.png" alt="Infographic explaining Theo's rate-limit trick with timelines, workflow, and decision tree">
+      </div>
+    </section>
+
+    <p class="footer">Created as a self-contained HTML explanation of Theo’s rate-limit trick, based on the uploaded transcript and follow-up discussion.</p>
+  </main>
+</body>
+</html>

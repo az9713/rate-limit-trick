@@ -9,8 +9,10 @@ A concise explainer of Theo’s “keep the rate-limit clock moving” workflow 
 
 This repo contains:
 
-- [`theo_rate_limit_trick_writeup.html`](./theo_rate_limit_trick_writeup.html) — a self-contained HTML write-up explaining the theory, workflow, and decision tree.
-- [`theo_s_rate_limit_trick_explained.png`](./theo_s_rate_limit_trick_explained.png) — an infographic visualization of the same idea.
+- [**Live write-up →**](https://az9713.github.io/rate-limit-trick/theo_rate_limit_trick_writeup.html) — a self-contained HTML write-up explaining the theory, workflow, and decision tree.
+- `maxxing_rate_limit.png` — an infographic visualization of the same idea.
+
+![Rate limit trick infographic](maxxing_rate_limit.png)
 
 ## Core idea
 
@@ -51,7 +53,7 @@ Do not bother if the countdown is already active.
 .
 ├── README.md
 ├── theo_rate_limit_trick_writeup.html
-└── theo_s_rate_limit_trick_explained.png
+└── maxxing_rate_limit.png
 ```
 
 ## Caveat
